@@ -26,10 +26,12 @@ func openDB() *sql.DB {
 func main() {
 	db := openDB()
 	defer db.Close()
+
 	if err := scanLibrary(db, "/home/alice/Music"); err != nil {
 		log.Fatal(err)
 	}
-	fs := http.FileServer(http.Dir("/home/alice/Music"))
-	http.Handle("/music/", http.StripPrefix("/music/", fs))
-	http.ListenAndServe(":8080", nil)
+
+	mux := http.NewServeMux()
+	registerRoutes(mux, db)
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
